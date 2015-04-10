@@ -1,70 +1,83 @@
 ---
+
 title: "Reproducible Research: Peer Assessment 1"
+
 output: 
-  html_document:
-    keep_md: true
+  
+	html_document:
+    
+		keep_md: true
+
 ---
 
 
+# Reproducible Research: Peer Assessment 1
 
-# Loading and preprocessing the data
+## Loading and preprocessing the data
 
-## load the csv in data frame 
-df <- read.csv('activity.csv', as.is=TRUE)
+```r
+df <- read.csv('activity.csv', as.is=TRUE) 
+df2 <- na.omit(df) 
+```
 
-## generate df2 with complete cases only 
-df2 <- na.omit(df)
+## What is mean total number of steps taken per day?
 
-# What is mean total number of steps taken per day?
-
-## aggregate steps as per date to get total number of steps in a day
+```r
 table_date_steps <- aggregate(steps ~ date, df2, sum)
-
-## create histogram of total number of steps in a day
 hist(table_date_steps$steps, col=1, main="Histogram of total number of steps per day", xlab="Total number of steps in a day")
+```
 
-## get mean and median total number of steps per day
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png) 
+
+```r
 mean(table_date_steps$steps)
+```
 
+```
 ## [1] 10766.19
+```
 
+```r
 median(table_date_steps$steps)
+```
 
+```
 ## [1] 10765
+```
+The mean and median total number of steps per day are 10766 and 10765 steps respectively.
 
-## The mean and median total number of steps per day are 10766 and 10765 steps respectively.
+## What is the average daily activity pattern?
 
-# What is the average daily activity pattern?
-
-## aggregate steps as interval to get average number of steps in an interval across all days
+```r
 table_interval_steps <- aggregate(steps ~ interval, df2, mean)
+plot(table_interval_steps$interval, table_interval_steps$steps, type='l', col=1, 
+	main="Average number of steps averaged over all days", xlab="Interval", ylab="Average number of steps")
+```
 
-## generate the line plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-plot(table_interval_steps$interval, table_interval_steps$steps, type='l', col=1, main="Average number of steps averaged over all days", xlab="Interval", ylab="Average number of steps")
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
 
-## find row id of maximum average number of steps in an interval
+```r
 max_ave_steps_row_id <- which.max(table_interval_steps$steps)
-
-## get the interval with maximum average number of steps in an interval
 table_interval_steps [max_ave_steps_row_id, ]
+```
 
-## interval    steps
-## 104       835      206.2
-## The interval 835 has the maximum average number of steps (206.2).
+```
+##     interval    steps
+## 104      835 206.1698
+```
 
-# Imputing missing values
+## Imputing missing values
 
-## get rows with NA's
+```r
 df_NA <- df[!complete.cases(df),]
-
-## number of rows
 nrow(df_NA)
+```
 
+```
 ## [1] 2304
+```
 
-## The total number of rows with NA's is 2304 as shown above.
-
-## perform the imputation
+```r
 for (i in 1:nrow(df)){
   if (is.na(df$steps[i])){
     interval_val <- df$interval[i]
@@ -73,57 +86,62 @@ for (i in 1:nrow(df)){
     df$steps[i] <- steps_val
   }
 }
-
-## aggregate steps as per date to get total number of steps in a day
 table_date_steps_imputed <- aggregate(steps ~ date, df, sum)
+hist(table_date_steps_imputed$steps, col=1, main="(Imputed) Histogram of total number of steps per day", 
+	xlab="Total number of steps in a day")
+```
 
-## create histogram of total number of steps in a day
-hist(table_date_steps_imputed$steps, col=1, main="(Imputed) Histogram of total number of steps per day", xlab="Total number of steps in a day")
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
 
-## get mean and median of total number of steps per day
+```r
 mean(table_date_steps_imputed$steps)
+```
 
-## [1] 10766
+```
+## [1] 10766.19
+```
 
+```r
 median(table_date_steps_imputed$steps)
+```
 
-## [1] 10766
+```
+## [1] 10766.19
+```
 
-## get mean and median of total number of steps per day for data with NA's removed
+```r
 mean(table_date_steps$steps)
+```
 
-## [1] 10766
+```
+## [1] 10766.19
+```
 
+```r
 median(table_date_steps$steps)
+```
 
+```
 ## [1] 10765
+```
 
-## Due to data imputation, the means remain same whereas there is slight change in median value.
+## Are there differences in activity patterns between weekdays and weekends?
 
-# Are there differences in activity patterns between weekdays and weekends?
 
-## convert date from string to Date class
+```r
 df$date <- as.Date(df$date, "%Y-%m-%d")
-
-## add a new column indicating day of the week 
 df$day <- weekdays(df$date)
-
-## add a new column called day type and initialize to weekday
 df$day_type <- c("weekday")
-
-## If day is Saturday or Sunday, make day_type as weekend
 for (i in 1:nrow(df)){
   if (df$day[i] == "Saturday" || df$day[i] == "Sunday"){
     df$day_type[i] <- "weekend"
   }
 }
-
-## convert day_time from character to factor
 df$day_type <- as.factor(df$day_type)
-
-## aggregate steps as interval to get average number of steps in an interval across all days
 table_interval_steps_imputed <- aggregate(steps ~ interval+day_type, df, mean)
-
-## make the panel plot for weekdays and weekends
 library(ggplot2)
-qplot(interval, steps, data=table_interval_steps_imputed, geom=c("line"), xlab="Interval", ylab="Number of steps", main="") + facet_wrap(~ day_type, ncol=1)
+qplot(interval, steps, data=table_interval_steps_imputed, geom=c("line"), xlab="Interval", 
+	ylab="Number of steps", main="") + facet_wrap(~ day_type, ncol=1)
+```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
