@@ -1,0 +1,129 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+
+# Loading and preprocessing the data
+
+## load the csv in data frame 
+df <- read.csv('activity.csv', as.is=TRUE)
+
+## generate df2 with complete cases only 
+df2 <- na.omit(df)
+
+# What is mean total number of steps taken per day?
+
+## aggregate steps as per date to get total number of steps in a day
+table_date_steps <- aggregate(steps ~ date, df2, sum)
+
+## create histogram of total number of steps in a day
+hist(table_date_steps$steps, col=1, main="Histogram of total number of steps per day", xlab="Total number of steps in a day")
+
+## get mean and median total number of steps per day
+mean(table_date_steps$steps)
+
+## [1] 10766.19
+
+median(table_date_steps$steps)
+
+## [1] 10765
+
+## The mean and median total number of steps per day are 10766 and 10765 steps respectively.
+
+# What is the average daily activity pattern?
+
+## aggregate steps as interval to get average number of steps in an interval across all days
+table_interval_steps <- aggregate(steps ~ interval, df2, mean)
+
+## generate the line plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+plot(table_interval_steps$interval, table_interval_steps$steps, type='l', col=1, main="Average number of steps averaged over all days", xlab="Interval", ylab="Average number of steps")
+
+## find row id of maximum average number of steps in an interval
+max_ave_steps_row_id <- which.max(table_interval_steps$steps)
+
+## get the interval with maximum average number of steps in an interval
+table_interval_steps [max_ave_steps_row_id, ]
+
+## interval    steps
+## 104       835      206.2
+## The interval 835 has the maximum average number of steps (206.2).
+
+# Imputing missing values
+
+## get rows with NA's
+df_NA <- df[!complete.cases(df),]
+
+## number of rows
+nrow(df_NA)
+
+## [1] 2304
+
+## The total number of rows with NA's is 2304 as shown above.
+
+## perform the imputation
+for (i in 1:nrow(df)){
+  if (is.na(df$steps[i])){
+    interval_val <- df$interval[i]
+    row_id <- which(table_interval_steps$interval == interval_val)
+    steps_val <- table_interval_steps$steps[row_id]
+    df$steps[i] <- steps_val
+  }
+}
+
+## aggregate steps as per date to get total number of steps in a day
+table_date_steps_imputed <- aggregate(steps ~ date, df, sum)
+
+## create histogram of total number of steps in a day
+hist(table_date_steps_imputed$steps, col=1, main="(Imputed) Histogram of total number of steps per day", xlab="Total number of steps in a day")
+
+## get mean and median of total number of steps per day
+mean(table_date_steps_imputed$steps)
+
+## [1] 10766
+
+median(table_date_steps_imputed$steps)
+
+## [1] 10766
+
+## get mean and median of total number of steps per day for data with NA's removed
+mean(table_date_steps$steps)
+
+## [1] 10766
+
+median(table_date_steps$steps)
+
+## [1] 10765
+
+## Due to data imputation, the means remain same whereas there is slight change in median value.
+
+# Are there differences in activity patterns between weekdays and weekends?
+
+## convert date from string to Date class
+df$date <- as.Date(df$date, "%Y-%m-%d")
+
+## add a new column indicating day of the week 
+df$day <- weekdays(df$date)
+
+## add a new column called day type and initialize to weekday
+df$day_type <- c("weekday")
+
+## If day is Saturday or Sunday, make day_type as weekend
+for (i in 1:nrow(df)){
+  if (df$day[i] == "Saturday" || df$day[i] == "Sunday"){
+    df$day_type[i] <- "weekend"
+  }
+}
+
+## convert day_time from character to factor
+df$day_type <- as.factor(df$day_type)
+
+## aggregate steps as interval to get average number of steps in an interval across all days
+table_interval_steps_imputed <- aggregate(steps ~ interval+day_type, df, mean)
+
+## make the panel plot for weekdays and weekends
+library(ggplot2)
+qplot(interval, steps, data=table_interval_steps_imputed, geom=c("line"), xlab="Interval", ylab="Number of steps", main="") + facet_wrap(~ day_type, ncol=1)
