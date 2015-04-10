@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Loading and preprocessing the data</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h1>Loading and preprocessing the data</h1>
+
+<h2>load the csv in data frame</h2>
+
+<p>df &lt;- read.csv(&#39;activity.csv&#39;, as.is=TRUE)</p>
+
+<h2>generate df2 with complete cases only</h2>
+
+<p>df2 &lt;- na.omit(df)</p>
+
+<h1>What is mean total number of steps taken per day?</h1>
+
+<h2>aggregate steps as per date to get total number of steps in a day</h2>
+
+<p>table_date_steps &lt;- aggregate(steps ~ date, df2, sum)</p>
+
+<h2>create histogram of total number of steps in a day</h2>
+
+<p>hist(table_date_steps$steps, col=1, main=&ldquo;Histogram of total number of steps per day&rdquo;, xlab=&ldquo;Total number of steps in a day&rdquo;)</p>
+
+<h2>get mean and median total number of steps per day</h2>
+
+<p>mean(table_date_steps$steps)</p>
+
+<h2>[1] 10766.19</h2>
+
+<p>median(table_date_steps$steps)</p>
+
+<h2>[1] 10765</h2>
+
+<h2>The mean and median total number of steps per day are 10766 and 10765 steps respectively.</h2>
+
+<h1>What is the average daily activity pattern?</h1>
+
+<h2>aggregate steps as interval to get average number of steps in an interval across all days</h2>
+
+<p>table_interval_steps &lt;- aggregate(steps ~ interval, df2, mean)</p>
+
+<h2>generate the line plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)</h2>
+
+<p>plot(table_interval_steps$interval, table_interval_steps$steps, type=&#39;l&#39;, col=1, main=&ldquo;Average number of steps averaged over all days&rdquo;, xlab=&ldquo;Interval&rdquo;, ylab=&ldquo;Average number of steps&rdquo;)</p>
+
+<h2>find row id of maximum average number of steps in an interval</h2>
+
+<p>max_ave_steps_row_id &lt;- which.max(table_interval_steps$steps)</p>
+
+<h2>get the interval with maximum average number of steps in an interval</h2>
+
+<p>table_interval_steps [max_ave_steps_row_id, ]</p>
+
+<h2>interval    steps</h2>
+
+<h2>104       835      206.2</h2>
+
+<h2>The interval 835 has the maximum average number of steps (206.2).</h2>
+
+<h1>Imputing missing values</h1>
+
+<h2>get rows with NA&#39;s</h2>
+
+<p>df_NA &lt;- df[!complete.cases(df),]</p>
+
+<h2>number of rows</h2>
+
+<p>nrow(df_NA)</p>
+
+<h2>[1] 2304</h2>
+
+<h2>The total number of rows with NA&#39;s is 2304 as shown above.</h2>
+
+<h2>perform the imputation</h2>
+
+<p>for (i in 1:nrow(df)){
+  if (is.na(df$steps[i])){
+    interval_val &lt;- df$interval[i]
+    row_id &lt;- which(table_interval_steps$interval == interval_val)
+    steps_val &lt;- table_interval_steps$steps[row_id]
+    df$steps[i] &lt;- steps_val
+  }
+}</p>
+
+<h2>aggregate steps as per date to get total number of steps in a day</h2>
+
+<p>table_date_steps_imputed &lt;- aggregate(steps ~ date, df, sum)</p>
+
+<h2>create histogram of total number of steps in a day</h2>
+
+<p>hist(table_date_steps_imputed$steps, col=1, main=&ldquo;(Imputed) Histogram of total number of steps per day&rdquo;, xlab=&ldquo;Total number of steps in a day&rdquo;)</p>
+
+<h2>get mean and median of total number of steps per day</h2>
+
+<p>mean(table_date_steps_imputed$steps)</p>
+
+<h2>[1] 10766</h2>
+
+<p>median(table_date_steps_imputed$steps)</p>
+
+<h2>[1] 10766</h2>
+
+<h2>get mean and median of total number of steps per day for data with NA&#39;s removed</h2>
+
+<p>mean(table_date_steps$steps)</p>
+
+<h2>[1] 10766</h2>
+
+<p>median(table_date_steps$steps)</p>
+
+<h2>[1] 10765</h2>
+
+<h2>Due to data imputation, the means remain same whereas there is slight change in median value.</h2>
+
+<h1>Are there differences in activity patterns between weekdays and weekends?</h1>
+
+<h2>convert date from string to Date class</h2>
+
+<p>df$date &lt;- as.Date(df$date, &ldquo;%Y-%m-%d&rdquo;)</p>
+
+<h2>add a new column indicating day of the week</h2>
+
+<p>df$day &lt;- weekdays(df$date)</p>
+
+<h2>add a new column called day type and initialize to weekday</h2>
+
+<p>df$day_type &lt;- c(&ldquo;weekday&rdquo;)</p>
+
+<h2>If day is Saturday or Sunday, make day_type as weekend</h2>
+
+<p>for (i in 1:nrow(df)){
+  if (df$day[i] == &ldquo;Saturday&rdquo; || df$day[i] == &ldquo;Sunday&rdquo;){
+    df$day_type[i] &lt;- &ldquo;weekend&rdquo;
+  }
+}</p>
+
+<h2>convert day_time from character to factor</h2>
+
+<p>df$day_type &lt;- as.factor(df$day_type)</p>
+
+<h2>aggregate steps as interval to get average number of steps in an interval across all days</h2>
+
+<p>table_interval_steps_imputed &lt;- aggregate(steps ~ interval+day_type, df, mean)</p>
+
+<h2>make the panel plot for weekdays and weekends</h2>
+
+<p>library(ggplot2)
+qplot(interval, steps, data=table_interval_steps_imputed, geom=c(&ldquo;line&rdquo;), xlab=&ldquo;Interval&rdquo;, ylab=&ldquo;Number of steps&rdquo;, main=&ldquo;&rdquo;) + facet_wrap(~ day_type, ncol=1)</p>
+
+</body>
+
+</html>
